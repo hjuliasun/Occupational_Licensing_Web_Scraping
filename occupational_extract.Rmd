@@ -1,0 +1,214 @@
+---
+title: "occupational_extract"
+output: html_document
+date: "2023-06-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=TRUE}
+library(rvest)
+library(readr)
+library(stringr)
+
+```
+
+
+
+```{r eval=TRUE}
+article_df = setNames(data.frame(matrix(ncol = 3)), c("Author", "Title", "Link"))
+```
+
+
+```{r eval=TRUE}
+append_data = function(url, df) {
+  
+  #format url
+  jstor_page = read_html(url)
+  
+
+  # make a dataframe with all the titles
+    newdf = data.frame('Title' = html_text2(html_elements(jstor_page, '.gs_rt')))
+    
+    # add author names to the dataframe
+    newdf$Author = html_text2(html_elements(jstor_page, '.gs_a'))
+  
+    #add linke to dataframe
+  # newdf$Link = html_attr(html_elements(jstor_page, '.gs_or_ggsm a'), name = 'href')
+  
+  #join to existing dataframe
+  df <- full_join(df, newdf,by=c("Author", "Title"))
+  
+  #return updated dataframe
+  return(df)
+  
+}
+```
+
+
+```{r}
+occupational_licensing <- append_data(url = "https://scholar.google.com/scholar?start=970&q=occupational+licensing&hl=en&as_sdt=0,5", df = occupational_licensing)
+```
+
+```{r}
+# jstor_page2 = read_html("https://scholar.google.com/scholar?start=10&q=occupational+licensing&hl=en&as_sdt=0,5")
+#   
+#   newdf2 = data.frame('Title' = html_text2(html_elements(jstor_page2, '.gs_rt')))
+# 
+#   # # make a dataframe with all the names
+#   #   newdf = data.frame('Title' = html_text2(html_elements(jstor_page, '.gs_rt')))
+#   #   
+#   #   # add titles to the dataframe
+#   #   newdf$Author = html_text2(html_elements(jstor_page, '.gs_a'))
+#   
+# newdf2$Link = html_attr(html_elements(jstor_page2, '.gs_or_ggsm a'), name = 'href')
+
+```
+
+
+
+```{r}
+#removing extra row
+# article_df <- article_df[-1,]
+
+#remove column
+# occupational_licensing <- occupational_licensing[,-4]
+occupational_licensing <- occupational_licensing[,-6]
+
+
+
+```
+
+```{r}
+#adding date variable
+# occupational_licensing$date = NA
+# occupational_licensing$date <- str_extract_all(occupational_licensing$Author, '(181[2-9]|18[2-9]\\d|19\\d\\d|2\\d{3} | 20[0-4]\\d|2050)')
+
+  occupational_licensing <- left_join(occupational_licensing, occ_lisc,by=c("Author", "Title", "date","field","Link"))
+
+```
+
+
+```{r}
+otherdf <- occupational_licensing[1:461,]
+```
+```{r}
+
+editdf <- occupational_licensing[461:960,]
+
+```
+
+```{r}
+#add field variable
+# occupational_licensing$field = NA
+editdf$field <- str_extract_all(editdf$Author, '(?<=\\-).*')
+```
+
+```{r}
+editdf$field <- as.character(editdf$field)
+```
+
+```{r}
+  occupational_licensing <-rbind(otherdf,editdf)
+```
+
+
+```{r}
+# occupational_licensing$author = NA 
+editdf$Author = str_extract_all(editdf$Author, '^(.+?)-')
+
+```
+
+```{r}
+editdf$Author = gsub("-", "", editdf$Author )
+
+```
+
+```{r}
+# occupational_licensing$date = NA
+```
+
+
+```{r}
+occupational_licensing$date = str_extract_all(occupational_licensing$field, '(181[2-9]|18[2-9]\\d|19[5-9]\\d|20[0-4]\\d|2050)')
+
+```
+
+```{r}
+occupational_licensing$date = gsub("-", "", occupational_licensing$date )
+
+```
+
+```{r}
+occupational_licensing[occupational_licensing == "character(0)"] <- NA
+
+```
+
+```{r}
+occupational_licensing$date = as.character(occupational_licensing$date)
+```
+```{r}
+occupational_licensing$field = as.character(occupational_licensing$field)
+```
+```{r}
+occupational_licensing = data.frame(occupational_licensing)
+typeof(occupational_licensing)
+```
+
+
+```{r}
+write.csv(occupational_licensing, "~/Desktop/work/ECON SS/occupational_licensing3.csv", row.names=FALSE)
+# capture.output(occ_lisc, file = "Users/hannahsun/Desktop/occupational_licensing2.csv")
+
+```
+
+```{r}
+#reading in data set already gathered 
+occupational_licensing <- read_csv("occupational_licensing.csv")
+# View(occupational_licensing)
+
+```
+
+```{r}
+
+```
+
+
+```{r eval=TRUE}
+# 
+# # get the home page into R
+# jstor_page = read_html('https://scholar.google.com/scholar?hl=en&as_sdt=0,5&q=occupational+licensing')
+# 
+# # make a dataframe with all the names
+# article_df = data.frame('title' = html_text2(html_elements(jstor_page, '.gs_rt')))
+# 
+# # add titles to the dataframe
+# article_df$author = html_text2(html_elements(jstor_page, '.gs_a'))
+# 
+# sds_faculty$link = html_attr(html_elements(sds_page, '.linkopacity'), name = 'href')
+# 
+
+
+# # get the relative links to each faculty page
+# article_df$field = html_text2(html_elements(jstor_page, '.break-word'))
+
+```
+
+```{r}
+# get the home page into R
+jstor_page = read_html('https://scholar.google.com/scholar?start=10&q=occupational+licensing&hl=en&as_sdt=0,5')
+
+# make a dataframe with all the names
+article_df$title = html_text2(html_elements(jstor_page, '.gs_rt'))
+
+# add titles to the dataframe
+article_df$author = html_text2(html_elements(jstor_page, '.gs_a'))
+```
+
+
+```{r, echo=FALSE}
+# present the table cleanly on the website
+knitr::kable(sds_faculty)
+```

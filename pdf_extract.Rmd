@@ -1,0 +1,53 @@
+---
+title: "pdf_extract"
+output: html_document
+date: "2023-09-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pdftools::pdf_text(
+  here::here("./week_6/pdf_data/2020_solano.pdf"))
+```
+
+
+```{r}
+# make output vector
+output = c()
+
+# walk through each row and combine non-NA row conent
+for(line in 1:nrow(doc_table)){
+  
+  # check if standard is not NA
+  if(!is.na(doc_table[line, "Standard"])){
+    # record standard
+    standard = doc_table[line, "Standard"]
+    # clear buffer for action text
+    action_text = c()
+  }
+  
+  # get the current action text
+  action_text = append(action_text, doc_table[line, "Action"])
+  
+  # if the next row is a new standard, combine current text and save in output
+  if(line + 1 > nrow(doc_table) || !is.na(doc_table[line + 1, "Standard"])){
+    # combine all action text so far
+    action_text = paste0(action_text, collapse = " ")
+    
+    # save to output
+    output[as.character(line)] = action_text
+  
+  }
+  
+}
+
+# make clean output
+clean_doc_table = data.frame("standard" = doc_table[!is.na(doc_table$Standard), "Standard"],
+                             "action" = output,
+                             "due_date" = doc_table[!is.na(doc_table$Standard), "Due.date"])
+
+```
+

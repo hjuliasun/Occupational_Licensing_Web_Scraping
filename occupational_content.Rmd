@@ -1,0 +1,58 @@
+---
+title: "occupational_content"
+output: html_document
+date: "2023-06-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=TRUE}
+library(rvest)
+library(readr)
+library(stringr)
+library(ggplot2)
+
+```
+
+```{r}
+selected_papers <- read_csv("./occupational_licensing3.csv", show_col_types = FALSE, col_names = TRUE)
+
+selected_papers$field = toupper(selected_papers$field)
+
+```
+```{r}
+desiredFields <-  c("LABOR","LABOUR","INDUSTRIAL", "IRL", "INDUSTRIAL RELATIONS","ECONOMICS", "ECONOMIC", "SOCIOLOGY", "LABOR ECONOMICS", "LAW", "POLICY", "SOC")
+
+difPapers <- selected_papers %>% dplyr::filter(grepl(paste(desiredFields, collapse = "|"), field))
+```
+
+```{r}
+#clean out the nulls
+difPapers[difPapers == "NULL"] <- NA
+
+```
+
+
+```{r}
+ggplot(selected_papers, aes(x=date)) + geom_bar(fill = "blue", width = .3) + theme(text = element_text(size = 3)) 
+```
+
+```{r}
+ggplot(difPapers, aes(x=date)) + geom_bar(fill = "blue", width = .3) + theme(text = element_text(size = 5)) 
+```
+
+```{r}
+difPapers$Keywords = NA
+
+difPapers$Datasets = NA
+difPapers$Methods = NA
+```
+
+```{r}
+
+write.csv(difPapers, "~/Desktop/work/2023 Summer/ECON SS/jep.14.4.189.pdf", row.names=FALSE)
+
+```
+
